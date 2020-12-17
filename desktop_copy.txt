@@ -1,0 +1,141 @@
+     1	import browserhistory as bh
+     2	import sys
+       
+     3	class Show_data:
+       
+     4	    def __init__(self,show):
+       
+     5	        self.valid_shows = {"hunter"}
+       
+     6	        self.cur_show = show
+       
+     7	        #map show to official title
+     8	        self.show_to_title = {"hunter": 'Hunter x Hunter (2011)'}
+       
+     9	        #map for dash number that represents start of episode
+    10	        self.show_episode_dash = {"hunter":5,"naruto":4} 
+    11	        
+    12	        #largest valid episode
+    13	        self.max_show_episode = {"hunter":'148'} 
+       
+       
+    14	        #set of valid shows to use
+    15	        
+       
+    16	    def verify_show(self):
+    17	        if self.cur_show not in self.valid_shows:
+    18	            return False
+    19	        return True
+       
+    20	    def get_title(self):
+    21	        return self.show_to_title[self.cur_show]
+    22	    
+    23	    def get_episode_dash(self):
+    24	        return int(self.show_episode_dash[self.cur_show])
+    25	    
+    26	    def find_dash_idx(self,entry_url,num_dash):
+    27	        idx = -1
+       
+    28	        for _ in range(0,num_dash):
+    29	            idx = entry_url.find('-',idx+1)
+       
+    30	        return idx
+       
+    31	    def get_max_episode(self):
+    32	        return self.max_show_episode[self.cur_show]
+    33	    
+    34	    def verify_valid_episode(self,cur_episode):
+    35	        return cur_episode <= int(self.max_show_episode[self.cur_show])
+       
+    36	    
+    37	    
+    38	    
+       
+    39	def is_correct_entry(entry,show_data):
+       
+    40	    entry_title = entry[1]
+       
+    41	    target_title = show_data.get_title()
+       
+    42	    if len(target_title) > len(entry_title):
+    43	        return False
+       
+    44	    if entry_title[0:len(target_title)] == target_title:
+    45	        return True
+    46	    
+    47	    return False
+       
+       
+    48	def get_episode_num(entry_url,dash_idx):
+    49	    #dash_idx initially points to dash right before episode number, so increment once
+    50	    dash_idx += 1
+    51	    episode_num = ""
+    52	    while entry_url[dash_idx] != '-':
+    53	        episode_num += entry_url[dash_idx]
+    54	        dash_idx += 1
+       
+       
+       
+    55	    return int(episode_num)
+       
+       
+       
+    56	def get_next_url(entry,show_data):
+    57	    entry_url = entry[0]
+    58	    
+    59	    dash_num = show_data.show_episode_dash[show_data.cur_show]
+    60	    dash_idx = show_data.find_dash_idx(entry_url, dash_num)
+       
+    61	    cur_episode = get_episode_num(entry_url,dash_idx)
+    62	    cur_episode += 1
+       
+    63	    if show_data.verify_valid_episode(cur_episode) == False:
+    64	        print("Episode does not exist")
+    65	        exit(1)
+       
+    66	    return create_new_url(cur_episode,entry_url,dash_idx,show_data)
+       
+    67	def create_new_url(cur_episode, entry_url, dash_idx,show_data):
+    68	    new_url = entry_url[0:dash_idx]
+    69	    new_url += '-' + str(cur_episode)
+       
+    70	    next_dash_idx = show_data.get_episode_dash() +1
+       
+    71	    second_substr_idx = show_data.find_dash_idx(entry_url,next_dash_idx)
+       
+    72	    new_url += entry_url[second_substr_idx:]
+       
+    73	    return new_url
+       
+    74	def main():
+    75	    cur_show = sys.argv[1]
+       
+    76	    NUM_SEARCH = 200 #look through the last 200 history entries
+       
+    77	    show_data = Show_data(cur_show)
+       
+    78	    if show_data.verify_show() == False:
+    79	        print("Bad show...")
+    80	        exit(1)
+       
+       
+    81	    history_dict = bh.get_browserhistory()
+    82	    safari_history_list = history_dict['safari']
+       
+    83	    next_url = None
+       
+    84	    for search_idx in range(NUM_SEARCH):
+    85	        entry = safari_history_list[search_idx]
+       
+    86	        if is_correct_entry(entry,show_data):
+       
+    87	            next_url = get_next_url(entry,show_data)
+    88	            print(next_url)
+    89	            exit(0)
+       
+    90	    print("Episodes not found in history")
+    91	    exit(1)
+       
+    92	        
+    93	main()
+       
