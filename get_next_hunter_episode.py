@@ -4,7 +4,8 @@ import sys
 class Show_data:
 
     def __init__(self,show):
-
+        
+        #set of valid shows to use
         self.valid_shows = {"hunter"}
 
         self.cur_show = show
@@ -13,19 +14,17 @@ class Show_data:
         self.show_to_title = {"hunter": 'Hunter x Hunter (2011)'}
 
         #map for dash number that represents start of episode
-        self.show_episode_dash = {"hunter":5,"naruto":4} 
+        self.show_episode_dash = {"hunter":5} 
         
         #largest valid episode
         self.max_show_episode = {"hunter":'148'} 
 
 
-        #set of valid shows to use
-        
-
     def verify_show(self):
-        if self.cur_show not in self.valid_shows:
-            return False
-        return True
+        # if self.cur_show not in self.valid_shows:
+        #     return False
+        # return True
+        return self.cur_show in self.valid_shows
 
     def get_title(self):
         return self.show_to_title[self.cur_show]
@@ -49,9 +48,7 @@ class Show_data:
 
     
     
-    
-
-def is_correct_entry(entry,show_data,counter):
+def is_correct_entry(entry,show_data):
 
     entry_title = entry[1]
     
@@ -64,7 +61,6 @@ def is_correct_entry(entry,show_data,counter):
     if entry_title[0:len(target_title)] == target_title:
         return True
 
-    counter += 1 
     return False
 
 
@@ -125,19 +121,19 @@ def main():
     
     next_url = None
 
-    counter = 0
+
 
     for search_idx in range(NUM_SEARCH):
         entry = safari_history_list[search_idx]
 
         entry_url = entry[1] 
-        if entry_url != None and is_correct_entry(entry,show_data,counter):
+        if entry_url != None and is_correct_entry(entry,show_data):
             next_url = get_next_url(entry,show_data)
 
             print(next_url)
             exit(0)
 
-        counter += 1
+
 
     print(f"Episodes not found in history. Searched {NUM_SEARCH} entries")
     exit(1)
