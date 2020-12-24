@@ -14,12 +14,11 @@ then
     exit 1
 fi
 
-echo $url
-# open -a Safari $url
-pwd
+echo "the url is: $url"
 
 open -a Safari $url
 
+echo "Script completed"
 
 exit 0
 

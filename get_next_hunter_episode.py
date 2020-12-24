@@ -51,10 +51,9 @@ class Show_data:
     
     
 
-def is_correct_entry(entry,show_data):
+def is_correct_entry(entry,show_data,counter):
 
     entry_title = entry[1]
-
     
     #if i'm scaling this up to work for all streaming services, I need to return a list of titles to match with
     target_title = show_data.get_title() 
@@ -64,7 +63,8 @@ def is_correct_entry(entry,show_data):
 
     if entry_title[0:len(target_title)] == target_title:
         return True
-    
+
+    counter += 1 
     return False
 
 
@@ -111,7 +111,7 @@ def create_new_url(cur_episode, entry_url, dash_idx,show_data):
 def main():
     cur_show = sys.argv[1]
 
-    NUM_SEARCH = 200 #look through last 200 history entries
+    NUM_SEARCH = 1000 #look through last x history entries
 
     show_data = Show_data(cur_show)
 
@@ -122,19 +122,24 @@ def main():
 
     history_dict = bh.get_browserhistory() 
     safari_history_list = history_dict['safari'] #Make usable for other browswers too 
-
+    
     next_url = None
+
+    counter = 0
 
     for search_idx in range(NUM_SEARCH):
         entry = safari_history_list[search_idx]
 
-        if is_correct_entry(entry,show_data):
-
+        entry_url = entry[1] 
+        if entry_url != None and is_correct_entry(entry,show_data,counter):
             next_url = get_next_url(entry,show_data)
+
             print(next_url)
             exit(0)
 
-    print("Episodes not found in history")
+        counter += 1
+
+    print(f"Episodes not found in history. Searched {NUM_SEARCH} entries")
     exit(1)
 
         
